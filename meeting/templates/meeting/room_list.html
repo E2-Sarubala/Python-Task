@@ -1,0 +1,44 @@
+{% extends 'meeting/base.html' %}
+{% block content %}
+<div style="width: 80%; margin: 15px;">
+<h2>Rooms List</h2>
+
+{% if messages %}
+  <ul class="messages">
+    {% for message in messages %}
+      <li class="{{ message.tags }}">{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<a href="{% url 'room-add' %}" class="btn btn-primary">Add Room</a>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Location</th>
+      <th>Capacity</th>
+      <th>Resources</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for room in rooms %}
+      <tr>
+        <td>{{ room.name }}</td>
+        <td>{{ room.location }}</td>
+        <td>{{ room.capacity }}</td>
+        <td>{{ room.resources }}</td>
+        <td>
+          <a href="{% url 'room-edit' room.pk %}" class="btn btn-green">Edit</a>
+          <a href="{% url 'room-delete' room.pk %}" class="btn btn-red">Delete</a>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="5">No rooms found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

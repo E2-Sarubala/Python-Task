@@ -1,0 +1,37 @@
+<!-- meeting/templates/meeting/dashboard.html -->
+{% load static %}  <!-- Add this line at the top of the file -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Rooms Dashboard</title>
+    <link rel="stylesheet" href="{% static 'meeting/styles.css' %}">  <!-- Correct usage of static files -->
+</head>
+<body>
+    <!-- Dashboard Container -->
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h2 style="color: white; padding-left: 10px; text-align: unset;">Meeting Rooms</h2>
+            <ul>
+                <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li><a href="{% url 'room-list' %}">Rooms List</a></li>
+                <li><a href="{% url 'booking-list' %}">Room Bookings</a></li>
+                <li><a href="{% url 'room-availability' %}">Room Availability</a></li>
+                <li><a href="{% url 'analytics_dashboard' %}">Room Usage</a></li>
+                <br>
+                <a style="color: #007bff;" href="{% url 'logout' %}">Logout</a>
+
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <h1 style="margin: 0px;">Welcome to the Meeting Rooms Dashboard</h1>
+            <img src="../../static/dashboard.png" style="height: 90%; width: 100%;"/>
+        </div>
+    </div>
+</body>
+</html>

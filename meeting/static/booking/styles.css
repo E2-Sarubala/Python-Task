@@ -1,0 +1,262 @@
+/* General layout */
+body {
+    font-family: sans-serif;
+    padding: 20px;
+    background-color: #f9f9f9;
+  }
+  
+  /* Headings */
+  h2 {
+    margin-bottom: 20px;
+    color: #333;
+  }
+
+  .btn {
+    padding: 8px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+  }
+  
+  .btn-primary {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .btn-primary:hover {
+    background-color: #0069d9;
+  }
+  
+  
+  /* Table Styles */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 10px;
+    background-color: #fff;
+  }
+  
+  th, td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+  }
+  
+  th {
+    background-color: #f2f2f2;
+  }
+  
+  td a {
+    color: #007bff;
+    text-decoration: none;
+  }
+  
+  td a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Form Styles */
+  form {
+    background: #fff;
+    padding: 1px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    max-width: 500px;
+    width: 100%;
+  }
+  
+  .form-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    margin: 12px;
+  }
+  
+  .form-row label {
+    width: 120px;
+    margin-right: 10px;
+    font-weight: bold;
+  }
+  
+  .form-row input,
+  .form-row select,
+  .form-row textarea {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .centered-form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    min-height: 70vh;
+    width: 80%;
+  }
+  
+  /* Action Buttons Outside Form */
+  .form-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+  
+  /* Buttons */
+  .btn-green {
+    background-color: #28a745;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  
+  .btn-green:hover {
+    background-color: #218838;
+  }
+  
+  .btn-red {
+    background-color: #dc3545;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  
+  .btn-red:hover {
+    background-color: #c82333;
+  }
+  
+  /* Messages */
+  .messages {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0;
+  }
+  
+  .messages li {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+  }
+  
+  .messages li.success {
+    background: #d4edda;
+    color: #155724;
+  }
+  
+  .messages li.error {
+    background: #f8d7da;
+    color: #721c24;
+  }
+  
+  .messages li.info {
+    background: #d1ecf1;
+    color: #0c5460;
+  }
+  
+  .error {
+    color: red;
+    font-size: 14px;
+    margin-top: -10px;
+  }
+
+
+/* Booking List Specific Enhancements */
+.booking-table td,
+.booking-table th {
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.booking-table th:nth-child(2),
+.booking-table th:nth-child(3),
+.booking-table td:nth-child(2),
+.booking-table td:nth-child(3) {
+  min-width: 160px;
+}
+
+.booking-table td {
+  word-break: break-word;  /* allow breaking long words */
+  white-space: normal;     /* allow wrapping */
+  max-width: 200px;        /* limit column width */
+  overflow-wrap: break-word;
+}
+
+.booking-status {
+  padding: 5px 10px;
+  border-radius: 3px;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.booking-status.active {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.booking-status.expired {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Wrap table to avoid horizontal scroll */
+.table-container {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+/* Optional: Allow long text like resources to wrap nicely */
+.booking-table td {
+  word-wrap: break-word;
+  white-space: normal;
+}
+
+/* Enhance form spacing & shadows */
+form {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Improve select, input, textarea visual balance */
+form input[type="text"],
+form input[type="datetime-local"],
+form select,
+form textarea {
+  font-size: 14px;
+}
+
+/* Enhance form responsiveness */
+form textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Refined table headers for better readability */
+.booking-table th {
+  text-align: center;
+  font-weight: bold;
+  color: #444;
+}
+
+/* Center align table rows for consistency */
+.booking-table td {
+  text-align: center;
+}
+
+
+
+  

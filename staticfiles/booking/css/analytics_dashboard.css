@@ -1,0 +1,79 @@
+/* Base styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f2f5;
+    margin: 0;
+    padding: 40px;
+    color: #2c3e50;
+}
+
+/* Title */
+h1 {
+    text-align: center;
+    font-size: 2.5em;
+    color: #060607;
+    margin-bottom: 50px;
+}
+
+/* Section headers */
+h2 {
+    font-size: 22px;
+    color: #374151;
+    margin: 40px 0 20px;
+    text-align: center;
+}
+
+/* Chart containers */
+canvas {
+    display: block;
+    margin: 0 auto;
+    max-width: 900px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Auto-cancel stat */
+p {
+    text-align: center;
+    font-size: 1.2em;
+    color: #d97706;
+    font-weight: 500;
+    margin-top: 20px;
+}
+
+/* Export links */
+a {
+    display: inline-block;
+    margin: 20px 10px;
+    padding: 10px 20px;
+    background-color: #070a12;
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+    text-align: center;
+}
+
+a:hover {
+    background-color: #2563eb;
+}
+
+/* Responsive spacing */
+@media (max-width: 600px) {
+    body {
+        padding: 20px;
+    }
+
+    canvas {
+        padding: 10px;
+    }
+
+    a {
+        width: 100%;
+        margin: 10px 0;
+        text-align: center;
+    }
+}

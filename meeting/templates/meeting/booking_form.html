@@ -1,0 +1,60 @@
+{% extends 'meeting/base.html' %}
+{% block content %}
+
+<div class="centered-form" style="width: 80%;">
+  <h2>Create Booking</h2>
+
+  {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+        <li class="{{ message.tags }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <form method="post" id="room-form" style="width: 100%; padding: 30px 40px;">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="form-row" id="row-{{ field.name }}">
+        {{ field.label_tag }}
+        {{ field }}
+        {% if field.errors %}
+          <div class="error">{{ field.errors }}</div>
+        {% endif %}
+      </div>
+    {% endfor %}
+
+    {% if form.non_field_errors %}
+      <div class="error">{{ form.non_field_errors }}</div>
+    {% endif %}
+  </form>
+
+  <!-- Buttons placed outside form -->
+  <div class="form-actions">
+    <button type="submit" form="room-form" class="btn-green">Save</button>
+    <a href="{% url 'booking-list' %}" class="btn-red">Cancel</a>
+  </div>
+</div>
+
+<!-- Optional JS to toggle recurrence end date -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const recurrenceSelect = document.getElementById('id_recurrence');
+    const recurrenceEndRow = document.getElementById('row-recurrence_end');
+
+    function toggleRecurrenceEnd() {
+      if (recurrenceSelect && recurrenceSelect.value !== 'none') {
+        recurrenceEndRow.style.display = 'block';
+      } else {
+        recurrenceEndRow.style.display = 'none';
+      }
+    }
+
+    if (recurrenceSelect && recurrenceEndRow) {
+      toggleRecurrenceEnd();  // Initial check
+      recurrenceSelect.addEventListener('change', toggleRecurrenceEnd);
+    }
+  });
+</script>
+
+{% endblock %} 

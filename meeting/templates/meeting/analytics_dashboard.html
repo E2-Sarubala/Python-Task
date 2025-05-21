@@ -1,0 +1,73 @@
+{% load static %}
+<!DOCTYPE html>
+
+<html><head>
+    <title>Room Analytics Dashboard</title>
+    <link rel="stylesheet" href="/static/booking/css/analytics_dashboard.css">
+    <link rel="stylesheet" href="{% static 'meeting/styles.css' %}">  <!-- Correct usage of static files -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body style="padding: 0px;">
+    <div class="sidebar" style="width: 20%;">
+        <h2 style="color: white;">Meeting Rooms</h2>
+        <ul>
+            <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li><a href="{% url 'room-list' %}">Rooms List</a></li>
+            <li><a href="{% url 'booking-list' %}">Room Bookings</a></li>
+            <li><a href="{% url 'room-availability' %}">Room Availability</a></li>
+            <li><a href="{% url 'analytics_dashboard' %}">Room Usage</a></li>
+        </ul>
+    </div>
+    <div style="width: 80%; margin: 15px;">
+
+    <h1 style="margin: auto;">Room Usage Analytics</h1>
+<div style="
+    text-align: end;
+"><a href="/meeting/analytics/export/csv/">Export CSV</a> |
+    <a href="/meeting/analytics/export/json/">Export JSON</a></div><div style="
+    display: flex;
+    justify-content: space-evenly;
+    margin: 10px;
+">
+    <div style="
+    margin: 10px;
+">
+    <h2 style="margin: 10px;">Top 5 Most Used Rooms</h2>
+    <canvas id="topRoomsChart"></canvas>
+</div>
+    <div style="
+    margin: 10px;
+">
+
+    <h2 style="margin: 10px;">Average Occupancy Per Room</h2>
+    <canvas id="occupancyChart"></canvas>
+    </div>
+    
+    </div>
+    <div style="
+    margin: 10px;
+">
+    <h2 style="margin: 10px;">Booking Heatmap</h2>
+    <canvas id="heatmapChart"></canvas>
+    </div><h2>Auto-Cancelled Bookings</h2>
+    <p>{{ auto_cancelled_pct }}% of bookings were auto-cancelled.</p>
+
+    </div>
+
+    {{ top_rooms|json_script:"top-rooms-data" }}
+    {{ avg_occupancy|json_script:"avg-occupancy-data" }}
+    {{ heatmap_data|json_script:"heatmap-data" }}
+
+<script>
+    const topRoomsData = JSON.parse(document.getElementById('top-rooms-data').textContent);
+    const avgOccupancyData = JSON.parse(document.getElementById('avg-occupancy-data').textContent);
+    const heatmapData = JSON.parse(document.getElementById('heatmap-data').textContent);
+
+    console.log("Top Rooms:", topRoomsData);
+    console.log("Avg Occupancy:", avgOccupancyData);
+    console.log("Heatmap:", heatmapData);
+</script>
+
+<script src="{% static 'booking/js/analytics_charts.js' %}"></script>
+
+</body></html>

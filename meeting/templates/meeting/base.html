@@ -1,0 +1,47 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Meeting Room Booking</title>
+  <link rel="stylesheet" href="{% static 'booking/styles.css' %}">
+  <link rel="stylesheet" href="{% static 'meeting/styles.css' %}">  <!-- Correct usage of static files -->
+</head>
+<body>
+  <div class="sidebar" style="width: 20%;">
+    <h2 style="color: white; padding-left: 10px; text-align: unset;">Meeting Rooms</h2>
+    <ul>
+        <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+        <li><a href="{% url 'room-list' %}">Rooms List</a></li>
+        <li><a href="{% url 'booking-list' %}">Room Bookings</a></li>
+        <li><a href="{% url 'room-availability' %}">Room Availability</a></li>
+        <li><a href="{% url 'analytics_dashboard' %}">Room Usage</a></li>
+    </ul>
+</div>
+{% if messages %}
+<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
+  {% for message in messages %}
+    <div class="toast-message {{ message.tags }}" style="
+      background-color: #333;
+      color: #fff;
+      padding: 10px 20px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      opacity: 0.95;
+    ">
+      {{ message }}
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+  {% block content %}{% endblock %}
+
+  <script>
+    setTimeout(function () {
+      const messages = document.querySelectorAll('.toast-message');
+      messages.forEach(msg => msg.style.display = 'none');
+    }, 5000);
+  </script>
+</body>
+</html>

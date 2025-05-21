@@ -1,0 +1,102 @@
+{% extends 'meeting/base.html' %}
+{% block content %}
+
+<div style="width: 80%; margin: 15px;">
+  <h2>Booking Group Details</h2>
+
+  <a href="{% url 'booking-list' %}" style="color: #007bff;" class="btn btn-secondary">Back to Booking List</a>
+
+  <div class="table-container">
+    <table class="booking-table">
+      <thead>
+        <tr>
+          <th>Room</th>
+          <th>Start Time</th>
+          <th>End Time</th>
+          <th>Attendees</th>
+          <th>Resources</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Check-In</th>
+          <th>Recurrence Dates</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for booking in group_bookings %}
+          <tr>
+            <td>{{ booking.room.name }}</td>
+            <td>{{ booking.start_time|date:"Y-m-d H:i" }}</td>
+            <td>{{ booking.end_time|date:"Y-m-d H:i" }}</td>
+            <td>{{ booking.attendees }}</td>
+            <td>{{ booking.required_resources }}</td>
+            <td>
+              {% if booking.recurrence != 'none' %}
+                Recurring ({{ booking.recurrence|capfirst }})
+              {% else %}
+                One-time
+              {% endif %}
+            </td>
+            <td>
+              {% if booking.display_status == 'Cancelled' %}
+                <span style="color: red;">Cancelled</span>
+              {% elif booking.display_status == 'Checked In' %}
+                <span style="color: blue;">Checked In</span>
+              {% elif booking.display_status == 'Missed' %}
+                <span style="color: orange;">Missed</span>
+              {% elif booking.display_status == 'Active' %}
+                <span style="color: green;">Active</span>
+              {% else %}
+                <span style="color: gray;">Completed</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if booking.checked_in %}
+                <span style="color: blue;">Checked In</span>
+              {% elif booking.checkin_allowed %}
+                <form action="{% url 'booking-checkin' booking.id %}" style="width: auto;" method="post">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-sm btn-success">Check In</button>
+                </form>
+              {% else %}
+                <span style="color: orange;">Not Checked In</span>
+              {% endif %}
+            </td>
+
+             <!-- Recurrence Dates -->
+             <td>
+              {% if booking.recurrence_dates %}
+              {% with next_date=booking.recurrence_dates.0 %}
+                <div style="margin-bottom: 5px;">
+                  <a href="{% url 'edit_recurring_date' booking.id next_date|date:'Y-m-d' %}" class="btn btn-green">Edit</a>
+                </div>
+              {% endwith %}
+              {% else %}
+                <span>—</span>
+              {% endif %}
+            </td>
+
+            <td>
+              {% if booking.cancelled %}
+                <span style="color: red;">Cancelled</span>
+              {% elif booking.can_be_cancelled %}
+                <form action="{% url 'booking-cancel' booking.id %}" method="post" style="display:inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-sm btn-danger">Cancel</button>
+                </form>
+              {% else %}
+                <span style="color: gray;">Cannot cancel</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="5">No bookings found in this group.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

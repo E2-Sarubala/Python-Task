@@ -1,0 +1,30 @@
+{% extends 'meeting/base.html' %}
+
+{% block content %}
+  <div class="centered-form" style="width: 80%;">
+    <h2>Add Room</h2>
+
+    {% if form.non_field_errors %}
+  <div class="alert alert-danger">
+    {{ form.non_field_errors }}
+  </div>
+{% endif %}
+
+
+
+    <form method="post" id="room-form" style="width: 100%;">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="form-row">
+          {{ field.label_tag }}
+          {{ field }}
+        </div>
+      {% endfor %}
+
+      <div class="form-actions">
+        <button type="submit" form="room-form" class="btn-green" style="width: 15%;">Save</button>
+        <a href="{% url 'room-list' %}" class="btn-red">Cancel</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

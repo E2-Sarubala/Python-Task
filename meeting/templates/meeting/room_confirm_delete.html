@@ -1,0 +1,15 @@
+{% extends 'meeting/base.html' %}
+{% block content %}
+<div style="width: 80%; margin: 15px; display: flex; flex-direction: column; align-items: center;">
+<h2>Delete Room</h2>
+<form method="post" style="text-align: center; width: 100%; height: 25%; padding: 30px 40px; display: flex; flex-direction: column; align-items: center;">
+  {% csrf_token %}
+  <p style="margin-bottom: 30px;">Are you sure you want to delete?</p>
+  <p style="margin-bottom: 30px;"> <strong>{{ object.name }}</strong></p>
+  <div style="display: flex; width: 100%; justify-content: center;">
+  <button type="submit" class="btn-red" style="width: 10%; margin-right: 10px;">Yes</button>
+  <a href="{% url 'room-list' %}" class="btn-green">No</a>
+  </div>
+</form>
+</div>
+{% endblock %}

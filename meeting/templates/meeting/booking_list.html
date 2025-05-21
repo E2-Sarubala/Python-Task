@@ -1,0 +1,47 @@
+{% extends 'meeting/base.html' %}
+{% block content %}
+
+<div style="width: 80%; margin: 15px;">
+  <h2>Room Booking Summary</h2>
+
+  {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+        <li class="{{ message.tags }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  <a href="{% url 'booking-create' %}" class="btn btn-primary">Create Booking</a>
+  <div class="table-container">
+    <table class="booking-table">
+        <thead>
+            <tr>
+                <th>Room</th>
+                <th>Number of Bookings</th>
+            </tr>
+        </thead>
+        <tbody>
+          {% if grouped_bookings %}
+            {% for room, bookings in grouped_bookings.items %}
+              <tr>
+                <td>{{ room.name }}</td>
+                <td>
+                    <a href="{% url 'booking-group-detail' room.id %}">
+                        {{ bookings|length }} bookings
+                    </a>
+                </td>
+            </tr>
+          {% endfor %}
+      {% else %}
+        <tr>
+            <td colspan="5">No bookings found.</td>
+        </tr>
+    {% endif %}
+</tbody>
+
+    </table>
+  </div>
+</div>
+
+{% endblock %}

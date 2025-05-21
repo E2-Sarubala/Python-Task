@@ -1,0 +1,103 @@
+{% extends 'meeting/base.html' %}
+
+{% block content %}
+<div style="display: flex; align-items: center; flex-direction: column; width: 80%; padding: 0px 20px">
+<h2>Available Rooms API (UI)</h2>
+
+<form id="availability-form" style="width: 100%; padding: 30px 40px;">
+    <div class = "form-row">
+        <label for="start">Start datetime:</label>
+        <input type="datetime-local" id="start" name="start" required><br><br>
+    </div>
+
+    <div class = "form-row">
+        <label for="end">End datetime:</label>
+        <input type="datetime-local" id="end" name="end" required><br><br>
+    </div>
+
+    <div class = "form-row">
+        <label for="capacity">Capacity:</label>
+        <input type="number" id="capacity" name="capacity"><br><br>
+    </div>
+
+    <div class = "form-row">
+        <label for="resources">Resources:</label>
+        <input type="text" id="resources" name="resources"><br><br>
+    </div>
+    
+    <div class = "form-actions">
+      <button type="submit">Check Availability</button>
+    </div>
+</form>
+
+<hr>
+
+<h3>Results</h3>
+<table border="1" id="results-table" style="display: none;">
+    <thead>
+        <tr>
+            <th>Room Name</th>
+            <th>Capacity</th>
+            <th>Resources</th>
+        </tr>
+    </thead>
+    <tbody id="results-body">
+    </tbody>
+</table>
+
+<p id="error-msg" style="color:red;"></p>
+</div>
+<script>
+document.getElementById('availability-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const start = document.getElementById('start').value;
+    const end = document.getElementById('end').value;
+    const capacity = document.getElementById('capacity').value;
+    const resources = document.getElementById('resources').value;
+
+    let url = `/meeting/api/rooms/available/?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+    if (capacity) url += `&capacity=${encodeURIComponent(capacity)}`;
+    if (resources) {
+        const resList = resources
+            .split(',')
+            .map(r => r.trim().replace(/\.$/, ''));
+        resList.forEach(r => url += `&resources=${encodeURIComponent(r)}`);
+    }
+
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            console.log("Fetched room availability data:", data);  
+            const table = document.getElementById('results-table');
+            const body = document.getElementById('results-body');
+            const error = document.getElementById('error-msg');
+            body.innerHTML = '';
+            error.innerText = '';
+
+            if (data.error) {
+                error.innerText = data.error;
+                table.style.display = 'none';
+            } else if (data.length === 0) {
+                error.innerText = "No rooms available for the given criteria.";
+                table.style.display = 'none';
+            } else {
+                data.forEach(room => {
+                    const row = `
+                        <tr>
+                            <td>${room.name}</td>
+                            <td>${room.capacity}</td>
+                            <td>${room.resources}</td>
+                        </tr>`;
+                    body.innerHTML += row;
+                });
+                table.style.display = 'table';
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            document.getElementById('error-msg').innerText = 'An error occurred.';
+        });
+});
+</script>
+{% endblock %}
