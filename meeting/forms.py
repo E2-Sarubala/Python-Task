@@ -2,6 +2,8 @@ from django import forms
 from .models import Room, Booking
 from django.utils import timezone
 from datetime import date
+from django.forms.widgets import CheckboxSelectMultiple
+
 
 class RoomForm(forms.ModelForm):
     class Meta:

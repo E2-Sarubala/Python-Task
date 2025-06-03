@@ -38,7 +38,7 @@ def login_view(request):
             messages.error(request, 'Invalid username or password')
     return render(request, 'meeting/login.html')
 
-@login_required # logged-in users to view the dashboard
+@login_required # logged-in users can view the dashboard
 def dashboard(request):
     return render(request, 'meeting/dashboard.html')
 
@@ -49,7 +49,7 @@ def create_booking(request):
     return HttpResponse("Create Booking Page")
 
 @login_required
-@require_GET
+@require_GET # Ensures only logged-in users using a GET request can access this
 def room_availability_view(request):
     return render(request, 'meeting/room_availability.html')
 
@@ -99,22 +99,27 @@ class RoomUpdateView(LoginRequiredMixin, AdminRequiredMixin, UpdateView):
         messages.error(self.request, "Failed to update room.")
         return super().form_invalid(form)
 
+ 
 class RoomDeleteView(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
     model = Room
     template_name = 'meeting/room_confirm_delete.html'
     success_url = reverse_lazy('room-list')
 
-    def delete(self, request, *args, **kwargs):
+    def dispatch(self, request, *args, **kwargs):
         self.object = self.get_object()
-        future_bookings = self.object.booking_set.filter(start_time__gt=timezone.now())
-
-        if future_bookings.exists():
-            messages.error(request, "Cannot delete this room.")
-            return redirect('room-list')
-        else:
-            messages.success(request, "Room deleted.")
-            return super().delete(request, *args, **kwargs)
         
+        # Check for any future bookings
+        future_bookings = self.object.booking_set.filter(start_time__gt=timezone.now())
+        if future_bookings.exists():
+            messages.error(request, "Cannot delete this room because it has future bookings.")
+            return redirect(self.success_url)
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, "Room deleted successfully.")
+        return super().delete(request, *args, **kwargs)
+
 
 # ---------- Booking Views ----------
 class BookingCreateView(LoginRequiredMixin, CreateView):
@@ -124,7 +129,7 @@ class BookingCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('booking-list')
 
     def form_valid(self, form):
-        form.instance.user = self.request.user
+        form.instance.user = self.request.user # Assigns the logged-in user
         recurrence = form.cleaned_data.get('recurrence')
         recurrence_end = form.cleaned_data.get('recurrence_end')
         start_time = form.cleaned_data.get('start_time')
@@ -134,7 +139,7 @@ class BookingCreateView(LoginRequiredMixin, CreateView):
             form.add_error(None, "Booking duration must be at least 30 minutes.")
             return self.form_invalid(form)
         else:
-            pass  # else added for coverage
+            pass  
 
         if recurrence != 'none' and recurrence_end:
             series_id = uuid4()
@@ -201,7 +206,7 @@ class BookingListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         return Booking.objects.filter(user=self.request.user).order_by('room_id', 'start_time')
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs): # more context to be passed to the template.
         context = super().get_context_data(**kwargs)
         current_time = timezone.localtime(timezone.now())
         bookings = self.get_queryset()
@@ -238,8 +243,9 @@ class BookingListView(LoginRequiredMixin, ListView):
 
 
 @login_required # Only logged-in users can access this view
-@csrf_exempt
-@require_POST
+@csrf_exempt  # Disables CSRF protection for this view
+@require_POST # Ensures this view only responds to POST requests, Prevents check-ins via GET URLs.
+
 def booking_checkin(request, booking_id):
     booking = get_object_or_404(Booking, id=booking_id, user=request.user)
     now = timezone.now()
@@ -260,7 +266,7 @@ def cancel_booking(request, booking_id):
         return redirect('booking-list')
 
     try:
-        booking.cancel(user=request.user)
+        booking.cancel(user=request.user) # Calls the model method cancel() on the booking object.
         messages.success(request, "Booking cancelled.")
     except ValueError as e:
         messages.error(request, str(e))
@@ -279,7 +285,8 @@ class AvailableRoomsAPIView(APIView):
         else:
             pass  # For coverage
 
-        try:
+        try:  
+            # Parse and Convert to Timezone-Aware Datetimes
             start_dt = datetime.strptime(start_param, "%Y-%m-%dT%H:%M")
             end_dt = datetime.strptime(end_param, "%Y-%m-%dT%H:%M")
             start_dt = timezone.make_aware(start_dt)
@@ -297,7 +304,8 @@ class AvailableRoomsAPIView(APIView):
         capacity = request.GET.get('capacity')
         resources_input = request.GET.get('resources')
         resources = [r.strip() for r in resources_input.split(',')] if resources_input else []
-
+        
+        # IDs of rooms that have active bookings overlapping with the requested time
         overlapping = Booking.objects.filter(
             is_active=True,
             start_time__lt=end_dt,
@@ -368,6 +376,7 @@ def analytics_dashboard(request):
     return render(request, 'meeting/analytics_dashboard.html', context)
 
 
+  
 def export_analytics_csv(request):
     if not request.user.is_authenticated:
         return HttpResponse("Unauthorized", status=401)

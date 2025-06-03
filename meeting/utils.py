@@ -24,8 +24,15 @@ def get_recurrence_dates(booking):
             current_date += timedelta(weeks=1)
 
     elif recurrence == 'monthly':
+        day = start_date.day
         while current_date <= end_date:
             recurrence_dates.append(current_date)
-            current_date += relativedelta(months=1)
+            next_date = current_date + relativedelta(months=1)
+            try:
+                # Try to set the same day (like 31st)
+                current_date = next_date.replace(day=day)
+            except ValueError:
+                # If the day doesn't exist (like Feb 31), fallback to last day of that month
+                current_date = next_date + relativedelta(day=31)
 
     return recurrence_dates

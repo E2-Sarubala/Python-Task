@@ -52,7 +52,7 @@ class Booking(models.Model):
     def __str__(self):
         return f"{self.room.name} - {self.start_time.strftime('%Y-%m-%d %H:%M')}"
 
-    def is_conflicting(self):
+    def is_conflicting(self):  # Checks for overlapping bookings 
         return Booking.objects.filter(
             room=self.room,
             start_time__lt=self.end_time,

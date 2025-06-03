@@ -6,7 +6,6 @@ from django.contrib.auth import views as auth_views
 
 
 urlpatterns = [
-
     # Login Urls
     path('login/', views.login_view, name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
@@ -32,8 +31,6 @@ urlpatterns = [
     path('edit-recurring-date/<int:booking_id>/<str:date>/', views.edit_recurring_date, name='edit_recurring_date'),
     path('bookings/group/<int:room_id>/', views.booking_group_detail, name='booking-group-detail'),
 
-
-
     # Room availability
     path('api/rooms/available/', AvailableRoomsAPIView.as_view(), name='api-room-availability'),
 
@@ -41,7 +38,5 @@ urlpatterns = [
     path('analytics/', views.analytics_dashboard, name='analytics_dashboard'),
     path('analytics/export/csv/', views.export_analytics_csv, name='export_analytics_csv'),
     path('analytics/export/json/', views.export_analytics_json, name='export_analytics_json'),
-
-
 ]
 
