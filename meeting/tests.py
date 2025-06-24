@@ -1258,6 +1258,54 @@ class RoomDeleteViewTests(TestCase):
         self.assertContains(response, "Cannot delete this room because it has active future bookings.")
 
 
+class BookingDeleteViewTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+        # Create test user and login
+        self.user = User.objects.create_user(username='testuser', password='testpass')
+        self.client.login(username='testuser', password='testpass')
+
+        # Create a test room and booking
+        self.room = Room.objects.create(name='Test Room', location='1st Floor', capacity=5, resources='Projector')
+        self.booking = Booking.objects.create(
+            room=self.room,
+            user=self.user,
+            # meeting_name='Test Meeting',
+            start_time=datetime.now() + timedelta(hours=1),
+            end_time=datetime.now() + timedelta(hours=2),
+            attendees=3
+        )
+
+        self.delete_url = reverse('booking-delete', args=[self.booking.pk])  # adjust name as per your `urls.py`
+
+    def test_booking_delete_get(self):
+        """GET request should render the confirmation template."""
+        response = self.client.get(self.delete_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'meeting/booking_confirm_delete.html')
+        # self.assertContains(response, 'Test Meeting')
+
+    def test_booking_delete_post(self):
+        """POST request should delete the booking and redirect."""
+        response = self.client.post(self.delete_url)
+        self.assertRedirects(response, reverse('booking-list'))
+        self.assertFalse(Booking.objects.filter(pk=self.booking.pk).exists())
+
+    def test_booking_delete_not_logged_in(self):
+        """Non-authenticated users should be redirected to login."""
+        self.client.logout()
+        response = self.client.get(self.delete_url)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/login/', response.url)
+
+    def test_booking_delete_invalid_pk(self):
+        """Invalid booking ID should return 404."""
+        invalid_url = reverse('booking-delete', args=[9999])
+        response = self.client.get(invalid_url)
+        self.assertEqual(response.status_code, 404)
+
+
 if __name__ == '__main__':
     unittest.main()
 

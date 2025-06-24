@@ -274,7 +274,7 @@ def booking_edit(request, pk):
 
     return render(request, 'meeting/booking_edit.html', {'form': form})
 
-
+@login_required
 def booking_delete(request, pk):
     booking = get_object_or_404(Booking, pk=pk)
 
