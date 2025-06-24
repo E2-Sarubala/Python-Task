@@ -17,23 +17,36 @@
     <table class="booking-table">
         <thead>
             <tr>
-                <th>Rooms</th>
-                <th>Number of Bookings</th>
+                <th>Room</th>
+                <th>Booking Count</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Type</th>
             </tr>
         </thead>
         <tbody>
           {% if grouped_bookings %}
             {% for room, bookings in grouped_bookings.items %}
-              <tr>
-                <td>{{ room.name }} - {{ room.location }}</td>
-                <td>
-                    <a href="{% url 'booking-group-detail' room.id %}">
-                        {{ bookings|length }} bookings
-                    </a>
-                </td>
-            </tr>
-          {% endfor %}
-      {% else %}
+  {% with first_booking=bookings.0 last_booking=bookings|last %}
+<tr>
+    <td>{{ room.name }} - {{ room.location }}</td>
+    <td>
+        <a href="{% url 'booking-group-detail' room.id %}">
+            {{ bookings|length }} bookings
+        </a>
+    </td>
+    <td>{{ first_booking.start_time|date:"Y-m-d H:i" }}</td>
+    <td>{{ last_booking.end_time|date:"Y-m-d H:i" }}</td>
+    <td>
+        <a href="{% url 'booking-edit' first_booking.id %}" class="btn btn-green">Edit</a>
+        <a href="{% url 'booking-delete' first_booking.id %}" class="btn btn-red">Delete</a>
+    </td>
+</tr>
+{% endwith %}
+
+{% endfor %}
+
+        {% else %}
         <tr>
             <td colspan="5">No bookings found.</td>
         </tr>
@@ -44,4 +57,4 @@
   </div>
 </div>
 
-{% endblock %}
+{% endblock %} 

@@ -9,9 +9,6 @@
     {{ form.non_field_errors }}
   </div>
 {% endif %}
-
-
-
     <form method="post" id="room-form" style="width: 100%;">
       {% csrf_token %}
       {% for field in form %}

@@ -4,7 +4,6 @@ from .views import (BookingCreateView, BookingListView, booking_checkin, Availab
 from . import views
 from django.contrib.auth import views as auth_views
 
-
 urlpatterns = [
     # Login Urls
     path('login/', views.login_view, name='login'),
@@ -26,6 +25,8 @@ urlpatterns = [
     # Booking URLs
     path('bookings/', BookingListView.as_view(), name='booking-list'),
     path('bookings/new/', BookingCreateView.as_view(), name='booking-create'),
+    path('booking/<int:pk>/edit/', views.booking_edit, name='booking-edit'),
+    path('booking/<int:pk>/delete/', views.booking_delete, name='booking-delete'),
     path('bookings/<int:booking_id>/checkin/', booking_checkin, name='booking-checkin'),
     path('bookings/<int:booking_id>/cancel/', views.cancel_booking, name='booking-cancel'),
     path('edit-recurring-date/<int:booking_id>/<str:date>/', views.edit_recurring_date, name='edit_recurring_date'),

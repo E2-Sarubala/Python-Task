@@ -38,10 +38,13 @@
   {% block content %}{% endblock %}
 
   <script>
-    setTimeout(function () {
-      const messages = document.querySelectorAll('.toast-message');
-      messages.forEach(msg => msg.style.display = 'none');
-    }, 5000);
-  </script>
+    document.addEventListener('DOMContentLoaded', function () {
+      setTimeout(function () {
+        const messages = document.querySelectorAll('.toast-message');
+        messages.forEach(msg => msg.style.display = 'none');
+      }, 5000);
+    });
+   </script>
+
 </body>
 </html>

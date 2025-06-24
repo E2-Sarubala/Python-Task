@@ -52,14 +52,15 @@ class Booking(models.Model):
     def __str__(self):
         return f"{self.room.name} - {self.start_time.strftime('%Y-%m-%d %H:%M')}"
 
-    def is_conflicting(self):  # Checks for overlapping bookings 
+    def is_conflicting(self):
         return Booking.objects.filter(
             room=self.room,
             start_time__lt=self.end_time,
             end_time__gt=self.start_time,
             cancelled=False  # Ignore cancelled bookings
         ).exclude(id=self.id).exists()
-
+    
+   
     @property
     def is_still_active(self):
         return self.end_time >= timezone.now() and not self.cancelled

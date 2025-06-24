@@ -17,7 +17,7 @@ from .serializers import RoomSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.db.models import Count, Avg, F, FloatField, Q
+from django.db.models import Count, Avg, F, FloatField, Q, Min, Max
 from django.http import JsonResponse, HttpResponse, Http404
 import csv
 from django.contrib.auth import authenticate, login
@@ -107,11 +107,13 @@ class RoomDeleteView(LoginRequiredMixin, AdminRequiredMixin, DeleteView):
 
     def dispatch(self, request, *args, **kwargs):
         self.object = self.get_object()
-        
-        # Check for any future bookings
+
+        # Get future bookings
         future_bookings = self.object.booking_set.filter(start_time__gt=timezone.now())
-        if future_bookings.exists():
-            messages.error(request, "Cannot delete this room because it has future bookings.")
+
+        # If any future booking is not cancelled → block deletion
+        if future_bookings.filter(cancelled=False).exists():
+            messages.error(request, "Cannot delete this room because it has active future bookings.")
             return redirect(self.success_url)
 
         return super().dispatch(request, *args, **kwargs)
@@ -240,6 +242,48 @@ class BookingListView(LoginRequiredMixin, ListView):
 
         context['grouped_bookings'] = dict(grouped)
         return context
+    
+def booking_edit(request, pk):
+    booking = get_object_or_404(Booking, pk=pk)
+    recurrence_group_id = booking.recurrence_group  # or however you store the group
+
+    if request.method == 'POST':
+        form = BookingForm(request.POST, instance=booking)
+        if form.is_valid():
+            updated_booking = form.save(commit=False)
+
+            # Fetch all bookings in the same recurrence group
+            if booking.recurrence != 'none':
+                group_bookings = Booking.objects.filter(recurrence_group=recurrence_group_id)
+
+                for b in group_bookings:
+                    b.room = updated_booking.room
+                    b.start_time = updated_booking.start_time  # Adjust if you want offset changes
+                    b.end_time = updated_booking.end_time
+                    b.attendees = updated_booking.attendees
+                    b.required_resources = updated_booking.required_resources
+                    b.save()
+
+            else:
+                # Single non-recurring booking
+                updated_booking.save()
+
+            return redirect('booking-list')
+    else:
+        form = BookingForm(instance=booking)
+
+    return render(request, 'meeting/booking_edit.html', {'form': form})
+
+
+def booking_delete(request, pk):
+    booking = get_object_or_404(Booking, pk=pk)
+
+    if request.method == 'POST':
+        booking.delete()
+        return redirect('booking-list')  # change to your actual bookings list URL name
+
+    # Optional: render a confirmation page before deleting
+    return render(request, 'meeting/booking_confirm_delete.html', {'booking': booking})
 
 
 @login_required # Only logged-in users can access this view
@@ -380,24 +424,35 @@ def analytics_dashboard(request):
 def export_analytics_csv(request):
     if not request.user.is_authenticated:
         return HttpResponse("Unauthorized", status=401)
-    else:
-        pass  # For test coverage
 
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="room_analytics.csv"'
 
     writer = csv.writer(response)
-    writer.writerow(['Room Name', 'Booking Count'])
+    writer.writerow([
+        'Room Name', 'Location', 'Start Date', 'End Date', 'Capacity', 'Resources', 'Booking Count'
+    ])
 
-    top_rooms = Room.objects.annotate(
-        bookings_count=Count('booking', filter=Q(booking__user=request.user))
-    ).filter(bookings_count__gt=0).order_by('-bookings_count')[:5]
+    top_rooms = (
+        Room.objects.annotate(
+            bookings_count=Count('booking', filter=Q(booking__user=request.user)),
+            start_date=Min('booking__start_time', filter=Q(booking__user=request.user)),
+            end_date=Max('booking__end_time', filter=Q(booking__user=request.user)),
+        )
+        .filter(bookings_count__gt=0)
+        .order_by('-bookings_count')[:5]
+    )
 
-    if top_rooms:
-        for room in top_rooms:
-            writer.writerow([room.name, room.bookings_count])
-    else:
-        pass  # Ensures loop coverage even if top_rooms is empty
+    for room in top_rooms:
+        writer.writerow([
+            room.name,
+            room.location,
+            room.start_date.strftime('%Y-%m-%d') if room.start_date else '',
+            room.end_date.strftime('%Y-%m-%d') if room.end_date else '',
+            room.capacity,
+            room.resources,  # Assuming this is a CharField or similar
+            room.bookings_count
+        ])
 
     return response
 
@@ -405,66 +460,110 @@ def export_analytics_csv(request):
 def export_analytics_json(request):
     if not request.user.is_authenticated:
         return JsonResponse({'error': 'Unauthorized'}, status=401)
-    else:
-        pass  # For test coverage
 
-    top_rooms = Room.objects.annotate(
-        bookings_count=Count('booking', filter=Q(booking__user=request.user))
-    ).filter(bookings_count__gt=0).order_by('-bookings_count')[:5]
+    top_rooms = (
+        Room.objects.annotate(
+            bookings_count=Count('booking', filter=Q(booking__user=request.user)),
+            start_date=Min('booking__start_time', filter=Q(booking__user=request.user)),
+            end_date=Max('booking__end_time', filter=Q(booking__user=request.user)),
+        )
+        .filter(bookings_count__gt=0)
+        .order_by('-bookings_count')[:5]
+    )
 
-    if top_rooms:
-        data = list(top_rooms.values('name', 'bookings_count'))
-    else:
-        data = []  # Ensures else coverage
+    data = []
+    for room in top_rooms:
+        data.append({
+            'name': room.name,
+            'location': room.location,
+            'start_date': room.start_date.strftime('%Y-%m-%d') if room.start_date else '',
+            'end_date': room.end_date.strftime('%Y-%m-%d') if room.end_date else '',
+            'capacity': room.capacity,
+            'resources': room.resources,
+            'bookings_count': room.bookings_count
+        })
 
     return JsonResponse(data, safe=False)
 
-# ---------- Edit Individual Recurring Booking ----------
+
+# ---------- Edit Individual Recurring Booking date ----------
 @login_required
 def edit_recurring_date(request, booking_id, date):
     booking = get_object_or_404(Booking, id=booking_id)
+    room_capacity = booking.room.capacity  # Get max capacity from Room model
 
     if request.method == 'POST':
         form = BookingEditForm(request.POST, instance=booking)
         if form.is_valid():
+            new_attendees = form.cleaned_data['attendees']
             new_date = form.cleaned_data['new_date']
-            booking.start_time = booking.start_time.replace(
-                year=new_date.year, month=new_date.month, day=new_date.day
-            )
-            booking.end_time = booking.end_time.replace(
-                year=new_date.year, month=new_date.month, day=new_date.day
-            )
-            booking.save()  # Save changes
-            return redirect('booking-list')
-        else:
-            pass  # Add else for coverage
+
+            # Check for room capacity
+            if new_attendees > room_capacity:
+                messages.error(request, f"Attendees must be less than room capacity ({room_capacity}).")
+            else:
+                # Build new start and end times
+                new_start_time = booking.start_time.replace(
+                    year=new_date.year, month=new_date.month, day=new_date.day
+                )
+                new_end_time = booking.end_time.replace(
+                    year=new_date.year, month=new_date.month, day=new_date.day
+                )
+
+                # Check for conflicting booking (exclude current one)
+                conflict_exists = Booking.objects.filter(
+                    room=booking.room,
+                    start_time=new_start_time, 
+                    end_time=new_end_time
+                ).exclude(id=booking.id).exists()
+
+                if conflict_exists:
+                    messages.error(request, f"A booking already exists for this room on {new_date} at the same time.")
+                else:
+                    # Safe to updatem 
+                    booking.attendees = new_attendees
+                    booking.start_time = new_start_time
+                    booking.end_time = new_end_time
+                    booking.save()
+                    messages.success(request, 'Recurring booking updated successfully!')
+                    return redirect('booking-list')
     else:
         form = BookingEditForm(initial={
-            'new_date': booking.start_time.date()
+            'new_date': booking.start_time.date(),
+            'attendees': booking.attendees
         })
 
     return render(request, 'meeting/edit_recurring_date.html', {
         'form': form,
         'booking': booking,
         'old_date': booking.start_time.date(),
+        'room_capacity': room_capacity
     })
+
 
 
 # ---------- Grouping Recurring Booking ----------
 def booking_list(request):
-    grouped_bookings = Booking.objects.filter(
-        Q(recurrence='none') |
-        Q(recurrence__in=['daily', 'weekly', 'monthly'], recurrence_group=F('id')),
-        user=request.user
-    ).order_by('room__name', 'start_time')
-
-    if grouped_bookings.exists():
-        pass  # For test coverage
-    else:
-        grouped_bookings = []  # Fallback if no bookings found
-
+    # Group recurring bookings and non-recurring bookings
+    grouped_bookings = (
+        Booking.objects
+        .filter(user=request.user)
+        .values('booking_group_id', 'room__name')
+        .annotate(
+            room_name=Min('room__name'),
+            room_location=Min('room__location'),
+            room_id=Min('room__id'),
+            start_date=Min('start_time'),
+            end_date=Max('end_time'),
+            booking_count=Count('id'),
+            group_id=Min('id'),  # Use for detail view link
+            recurrence_type=Min('recurrence')
+        )
+        .order_by('room_name', 'start_date')
+    )
+ 
     context = {'grouped_bookings': grouped_bookings}
-    return render(request, 'meeting/booking_list.html', context)
+    return render(request, 'meeting/booking_group_detail.html', context)
 
 
 def booking_group_detail(request, room_id):
@@ -510,7 +609,7 @@ def booking_group_detail(request, room_id):
         else:
             booking.recurrence_dates = []
 
-    return render(request, 'meeting/booking_room_detail.html', {
+    return render(request, 'meeting/booking_group_detail.html', {
         'group_bookings': group_bookings,
         'room': room,
     })

@@ -1,0 +1,20 @@
+{% extends 'meeting/base.html' %}
+{% block content %}
+<div style="display: flex; flex-direction: column; width: 80%; margin: 15px; align-items: center;">
+    <h1>Edit Booking</h1>
+    <form method="post" style="padding: 20px; width: auto;">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div style="display: flex; justify-content: space-evenly; margin-top: 20px;">
+            <button type="submit" style="width: auto;  background-color: green;">Save</button>
+            <a style="display: flex;
+                align-items: center;
+                text-decoration: none;
+                background-color: red;
+                padding: 10px;
+                color: white;
+                font-weight: bold; border-radius: 4px;" href="{% url 'booking-list' %}">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

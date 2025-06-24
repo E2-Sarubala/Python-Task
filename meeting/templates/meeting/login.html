@@ -1,28 +1,65 @@
 {% load static %}
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <title>Login</title>
     <link rel="stylesheet" href="{% static 'meeting/styles.css' %}">
+    <style>
+        .password-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .password-container input[type="password"],
+        .password-container input[type="text"] {
+            padding-right: 40px; /* Space for the eye icon */
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            cursor: pointer;
+            user-select: none;
+        }
+    </style>
 </head>
 <body>
     <div style="height: 100%; width: 100%; display: flex; flex-direction: column; align-items: center;">
-    <h2 style="height: 20%; display: flex; align-items: center;">Admin Login</h2>
-    {% if messages %}
-        {% for message in messages %}
-            <p style="color: red;">{{ message }}</p>
-        {% endfor %}
-    {% endif %}
-    <form method="post" style="padding: 30px 40px;">
-        {% csrf_token %}
-        <p>Username:</p>
-        <input type="text" name="username" placeholder="Username" required><br>
-        <p>Password:</p>
-        <input type="password" name="password" placeholder="Password" required><br>
-        <button type="submit">Login</button>
-    </form>
+        <h2 style="height: 20%; display: flex; align-items: center;">Admin Login</h2>
+
+        {% if messages %}
+            {% for message in messages %}
+                <p style="color: red;">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" style="padding: 30px 40px;">
+            {% csrf_token %}
+            <p>Username:</p>
+            <input type="text" name="username" placeholder="Username" required><br>
+
+            <p>Password:</p>
+            <div class="password-container">
+                <input type="password" name="password" id="password-field" placeholder="Password" required>
+                <span class="toggle-password" onclick="togglePassword()">👁️</span>
+            </div>
+
+            <br>
+            <button type="submit">Login</button>
+        </form>
     </div>
+
+    <script>
+        function togglePassword() {
+            const passwordField = document.getElementById("password-field");
+            const icon = document.querySelector(".toggle-password");
+            const isHidden = passwordField.type === "password";
+
+            passwordField.type = isHidden ? "text" : "password";
+            icon.textContent = isHidden ? "🙈" : "👁️";  // Change icon emoji
+        }
+    </script>
 </body>
 </html>

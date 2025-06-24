@@ -2,8 +2,6 @@ from django import forms
 from .models import Room, Booking
 from django.utils import timezone
 from datetime import date
-from django.forms.widgets import CheckboxSelectMultiple
-
 
 class RoomForm(forms.ModelForm):
     class Meta:
@@ -40,6 +38,10 @@ class BookingForm(forms.ModelForm):
         recurrence = cleaned_data.get('recurrence')
         recurrence_end = cleaned_data.get('recurrence_end')
 
+        valid_recurrences = ['none', 'daily', 'weekly']
+        if recurrence not in valid_recurrences:
+            raise forms.ValidationError("Invalid recurrence value.")
+
         if start and end:
             if start < timezone.now():
                 raise forms.ValidationError("Booking must be in the future.")
@@ -62,8 +64,4 @@ class BookingEditForm(forms.ModelForm):
 
     class Meta:
         model = Booking
-        fields = ['start_time', 'end_time', 'new_date']
-        widgets = {
-            'start_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-            'end_time': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-        } 
+        fields = ['attendees', 'new_date']

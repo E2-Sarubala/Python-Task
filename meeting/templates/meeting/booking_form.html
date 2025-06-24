@@ -36,25 +36,40 @@
   </div>
 </div>
 
+
 <!-- Optional JS to toggle recurrence end date -->
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const recurrenceSelect = document.getElementById('id_recurrence');
-    const recurrenceEndRow = document.getElementById('row-recurrence_end');
+document.addEventListener('DOMContentLoaded', function () {
+  const datetimeInputs = document.querySelectorAll('input[type="datetime-local"]');
 
-    function toggleRecurrenceEnd() {
-      if (recurrenceSelect && recurrenceSelect.value !== 'none') {
-        recurrenceEndRow.style.display = 'block';
-      } else {
-        recurrenceEndRow.style.display = 'none';
+  datetimeInputs.forEach(function (input) {
+    let originalValue = '';
+
+    input.addEventListener('focus', function () {
+      originalValue = input.value;  // Save value on focus
+    });
+
+    input.addEventListener('blur', function () {
+      const current = new Date();
+      const sysMinute = String(current.getMinutes()).padStart(2, '0');
+
+      const value = input.value;
+      if (value) {
+        const [date, time] = value.split('T');
+        const [hour, minute] = time.split(':');
+
+        // Case: user picked date + hour, but didn't change minutes (browser filled system minute)
+        if (originalValue === '' || originalValue === `${date}T${hour}:${sysMinute}`) {
+          input.value = `${date}T${hour}:00`;
+        }
       }
-    }
-
-    if (recurrenceSelect && recurrenceEndRow) {
-      toggleRecurrenceEnd();  // Initial check
-      recurrenceSelect.addEventListener('change', toggleRecurrenceEnd);
-    }
+    });
   });
+});
 </script>
+
+
+
+
 
 {% endblock %} 
